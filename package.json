@@ -1,7 +1,8 @@
 {
-  "name": "temp-app",
+  "name": "lumina-frontend",
   "version": "0.1.0",
   "private": true,
+  "description": "Frontend for Lumina Network — blockchain-based vesting vault and token streaming on Stellar Soroban",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
