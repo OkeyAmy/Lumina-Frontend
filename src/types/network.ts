@@ -65,3 +65,66 @@ export interface PickResult {
   x: number
   y: number
 }
+
+export interface AnalyticsDataPoint {
+  timestamp: number
+  latency: number
+  throughput: number
+  packetLoss: number
+}
+
+export type RollupGranularity = 'hourly' | 'daily' | 'weekly'
+
+export interface AggregationConfig {
+  granularity: RollupGranularity
+  startTime: number
+  endTime: number
+}
+
+export interface RollupBucket {
+  bucketStart: number
+  bucketEnd: number
+  count: number
+  avgLatency: number
+  p50Latency: number
+  p95Latency: number
+  p99Latency: number
+  avgThroughput: number
+  avgPacketLoss: number
+  minLatency: number
+  maxLatency: number
+}
+
+export interface AggregatedResult {
+  buckets: RollupBucket[]
+  overall: {
+    totalDataPoints: number
+    avgLatency: number
+    p50Latency: number
+    p95Latency: number
+    p99Latency: number
+    avgThroughput: number
+    avgPacketLoss: number
+    minLatency: number
+    maxLatency: number
+  }
+}
+
+export interface AnalyticsWorkerRequest {
+  type: 'aggregate'
+  payload: {
+    data: AnalyticsDataPoint[]
+    config: AggregationConfig
+    correlationId: string
+  }
+}
+
+export interface AnalyticsWorkerResponse {
+  type: 'result'
+  payload: {
+    result: AggregatedResult
+    correlationId: string
+  }
+}
+
+export type AnalyticsWorkerMessage = AnalyticsWorkerRequest | AnalyticsWorkerResponse
