@@ -18,7 +18,34 @@ const withSerwist = withSerwistInit({
 });
 
 const nextConfig: NextConfig = {
-  // Reserved for future app-specific options.
+  // Content-Security-Policy: defence-in-depth against XSS.
+  // Only allowlisted tags (b, i, a) survive DOMPurify sanitization;
+  // this header blocks inline script execution as a secondary layer
+  // should any unsanitized string ever reach the DOM.
+  async headers() {
+    return [
+      {
+        source: '/((?!_next/static|_next/image|icons|manifest).*)',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline'",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: blob:",
+              "font-src 'self'",
+              "connect-src 'self' wss: https:",
+              "frame-src 'none'",
+              "object-src 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+            ].join('; '),
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default withSerwist(nextConfig);

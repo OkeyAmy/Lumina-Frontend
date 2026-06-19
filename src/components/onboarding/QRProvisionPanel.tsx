@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useProvisionToken } from "@/src/hooks/useProvisionToken";
 import { renderQRCode } from "@/src/lib/qrGenerator";
+import { sanitizeNodeString, detectDangerPatterns } from "@/src/utils/sanitizer";
 import type {
   NodeConfig,
   ProvisionAttempt,
@@ -21,6 +22,57 @@ function formatTimeRemaining(ms: number): string {
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
+
+/**
+ * NodeConfigSummary displays the sanitized node configuration details.
+ * All values are passed through the XSS sanitizer before rendering.
+ */
+function NodeConfigSummary({ config }: { config: NodeConfig }) {
+  const safeName = useMemo(() => sanitizeNodeString(config.name), [config.name]);
+  const safeLocation = useMemo(() => sanitizeNodeString(config.location), [config.location]);
+  const safeModel = useMemo(() => sanitizeNodeString(config.model), [config.model]);
+
+  // Run danger-pattern detection as a side-effect (monitoring/analytics)
+  useEffect(() => {
+    detectDangerPatterns(config.name);
+    detectDangerPatterns(config.location);
+    detectDangerPatterns(config.model);
+  }, [config.name, config.location, config.model]);
+
+  return (
+    <div className="border-t border-[#ece5d8] px-5 py-4" data-testid="qr-config-summary">
+      <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-[#6f5f48]">
+        Node Configuration
+      </h3>
+      <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div>
+          <dt className="text-xs text-[#6f5f48]">Name</dt>
+          <dd
+            className="mt-0.5 text-sm font-medium text-[#171512]"
+            data-testid="qr-config-name"
+            dangerouslySetInnerHTML={{ __html: safeName }}
+          />
+        </div>
+        <div>
+          <dt className="text-xs text-[#6f5f48]">Location</dt>
+          <dd
+            className="mt-0.5 text-sm font-medium text-[#171512]"
+            data-testid="qr-config-location"
+            dangerouslySetInnerHTML={{ __html: safeLocation }}
+          />
+        </div>
+        <div>
+          <dt className="text-xs text-[#6f5f48]">Model</dt>
+          <dd
+            className="mt-0.5 text-sm font-medium text-[#171512]"
+            data-testid="qr-config-model"
+            dangerouslySetInnerHTML={{ __html: safeModel }}
+          />
+        </div>
+      </dl>
+    </div>
+  );
 }
 
 /**
@@ -272,31 +324,7 @@ export function QRProvisionPanel({
 
       {/* Node config summary */}
       {nodeConfig && (
-        <div className="border-t border-[#ece5d8] px-5 py-4" data-testid="qr-config-summary">
-          <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-[#6f5f48]">
-            Node Configuration
-          </h3>
-          <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <div>
-              <dt className="text-xs text-[#6f5f48]">Name</dt>
-              <dd className="mt-0.5 text-sm font-medium text-[#171512]">
-                {nodeConfig.name}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-xs text-[#6f5f48]">Location</dt>
-              <dd className="mt-0.5 text-sm font-medium text-[#171512]">
-                {nodeConfig.location}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-xs text-[#6f5f48]">Model</dt>
-              <dd className="mt-0.5 text-sm font-medium text-[#171512]">
-                {nodeConfig.model}
-              </dd>
-            </div>
-          </dl>
-        </div>
+        <NodeConfigSummary config={nodeConfig} />
       )}
 
       {/* Provisioning log */}
