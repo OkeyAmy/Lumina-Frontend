@@ -28,10 +28,18 @@ const ALLOWED_ATTR = ['href', 'rel'];
 /**
  * Ensure anchor tags always carry `rel="nofollow noopener noreferrer"`
  * to prevent tab-napping and link-juice leakage.
+ *
+ * Uses nodeName string comparison instead of instanceof HTMLAnchorElement
+ * to remain compatible with SSR environments (Node.js lacks browser DOM
+ * constructors).
  */
 DOMPurify.addHook('afterSanitizeAttributes', (node) => {
-  if (node instanceof HTMLAnchorElement) {
-    const rel = node.getAttribute('rel') ?? '';
+  if (
+    (node as Element).nodeName === 'A' ||
+    (typeof HTMLAnchorElement !== 'undefined' &&
+      node instanceof HTMLAnchorElement)
+  ) {
+    const rel = (node as Element).getAttribute('rel') ?? '';
     const parts = new Set(
       rel
         .split(/\s+/)
@@ -41,7 +49,7 @@ DOMPurify.addHook('afterSanitizeAttributes', (node) => {
     parts.add('nofollow');
     parts.add('noopener');
     parts.add('noreferrer');
-    node.setAttribute('rel', [...parts].join(' '));
+    (node as Element).setAttribute('rel', [...parts].join(' '));
   }
 });
 
