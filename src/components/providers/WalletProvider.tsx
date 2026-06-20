@@ -45,6 +45,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
   const transitioningRef = useRef(false);
+  const prevPublicKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
     setWalletTransitioningRef(transitioningRef);
@@ -60,15 +61,20 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       if (window.freighter) {
         const info = await window.freighter.getUserInfo();
         const newKey = info.publicKey ?? null;
-        setPublicKey((prev) => {
-          if (prev !== newKey) {
-            setGeneration((g) => g + 1);
-          }
-          return newKey;
-        });
+
+        // Bump generation when the key changes, but keep the update
+        // outside setPublicKey's functional updater — calling a state
+        // setter inside another state updater is impure and will be
+        // silently discarded by React 18+.
+        if (prevPublicKeyRef.current !== newKey) {
+          setGeneration((g) => g + 1);
+        }
+        setPublicKey(newKey);
+        prevPublicKeyRef.current = newKey;
       }
     } catch {
       setPublicKey(null);
+      prevPublicKeyRef.current = null;
     } finally {
       transitioningRef.current = false;
       setIsTransitioning(false);
@@ -107,6 +113,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
     setPublicKey(null);
     setGeneration((g) => g + 1);
+    prevPublicKeyRef.current = null;
 
     transitioningRef.current = false;
     setIsTransitioning(false);
