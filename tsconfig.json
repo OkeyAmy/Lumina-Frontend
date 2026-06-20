@@ -22,13 +22,14 @@
       "@/*": ["./*"]
     }
   },
-  "include": [
+"include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    "**/*.mts",
+    "src/components/dashboard/AlertFeed.tsx"
   ],
   "exclude": ["node_modules", "**/__tests__/**", "**/*.test.ts", "**/*.test.tsx", "./tests/**/*"]
 }

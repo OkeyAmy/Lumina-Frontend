@@ -1,0 +1,80 @@
+{
+  "contracts": [
+    {
+      "contractAddress": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4",
+      "contractName": "NodeBandwidth",
+      "events": [
+        {
+          "eventName": "BandwidthAlert",
+          "topics": ["BandwidthAlert", "node_id"],
+          "decode": {
+            "fields": [
+              { "name": "nodeId", "type": "string", "topicIndex": 1 },
+              { "name": "usagePercent", "type": "u32", "dataIndex": 0 },
+              { "name": "threshold", "type": "u32", "dataIndex": 1 }
+            ],
+            "messageTemplate": "Node {nodeId} bandwidth capacity reached {usagePercent}%"
+          }
+        },
+        {
+          "eventName": "NodeOffline",
+          "topics": ["NodeOffline", "node_id"],
+          "decode": {
+            "fields": [
+              { "name": "nodeId", "type": "string", "topicIndex": 1 },
+              { "name": "lastSeen", "type": "u64", "dataIndex": 0 }
+            ],
+            "messageTemplate": "Node {nodeId} went offline at {lastSeen}"
+          }
+        }
+      ]
+    },
+    {
+      "contractAddress": "CBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBSC4",
+      "contractName": "EscrowVault",
+      "events": [
+        {
+          "eventName": "LowBalance",
+          "topics": ["LowBalance", "account"],
+          "decode": {
+            "fields": [
+              { "name": "account", "type": "address", "topicIndex": 1 },
+              { "name": "balance", "type": "i128", "dataIndex": 0 },
+              { "name": "currency", "type": "string", "dataIndex": 1 }
+            ],
+            "messageTemplate": "Escrow balance low: {balance} {currency} remaining"
+          }
+        },
+        {
+          "eventName": "EscrowReleased",
+          "topics": ["EscrowReleased", "account"],
+          "decode": {
+            "fields": [
+              { "name": "account", "type": "address", "topicIndex": 1 },
+              { "name": "amount", "type": "i128", "dataIndex": 0 },
+              { "name": "currency", "type": "string", "dataIndex": 1 }
+            ],
+            "messageTemplate": "Escrow released: {amount} {currency} to {account}"
+          }
+        }
+      ]
+    },
+    {
+      "contractAddress": "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCSC4",
+      "contractName": "LiquidityPool",
+      "events": [
+        {
+          "eventName": "SlippageWarning",
+          "topics": ["SlippageWarning", "pool_id"],
+          "decode": {
+            "fields": [
+              { "name": "poolId", "type": "string", "topicIndex": 1 },
+              { "name": "slippageBps", "type": "u32", "dataIndex": 0 }
+            ],
+            "messageTemplate": "High slippage detected in pool {poolId}: {slippageBps} bps"
+          }
+        }
+      ]
+    }
+  ]
+}

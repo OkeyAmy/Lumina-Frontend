@@ -17,7 +17,8 @@
     "test:queue": "tsx src/lib/__tests__/txQueue.test.ts",
     "test:sliding-window": "tsx src/lib/__tests__/slidingWindow.test.ts",
     "test:e2e": "playwright test",
-    "test:all": "tsx src/lib/__tests__/offlineQueue.test.ts && tsx src/lib/__tests__/OptimisticTransactionManager.test.ts && tsx src/services/__tests__/localCache.test.ts && tsx src/lib/__tests__/txQueue.test.ts && tsx src/lib/__tests__/slidingWindow.test.ts"
+    "test:idb": "tsx src/lib/__tests__/idbClient.test.ts",
+    "test:all": "tsx src/lib/__tests__/offlineQueue.test.ts && tsx src/lib/__tests__/OptimisticTransactionManager.test.ts && tsx src/services/__tests__/localCache.test.ts && tsx src/lib/__tests__/txQueue.test.ts && tsx src/lib/__tests__/slidingWindow.test.ts && tsx src/lib/__tests__/idbClient.test.ts"
   },
   "dependencies": {
     "@serwist/next": "^9.5.11",
@@ -30,17 +31,22 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "recharts": "^3.8.1",
-    "serwist": "^9.5.11"
-  },
+    "serwist": "^9.5.11",
+    "zustand": "^5.0.14"
+},
   "devDependencies": {
     "@playwright/test": "^1.61.0",
     "@tailwindcss/postcss": "^4",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "jest": "^30.4.2",
+    "tailwindcss": "^4",
+    "ts-jest": "^29.4.11",
     "fake-indexeddb": "^6.2.5",
     "tailwindcss": "^4",
     "tsx": "^4.22.4",
