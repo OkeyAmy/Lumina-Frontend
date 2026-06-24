@@ -423,6 +423,32 @@ export function MeshTopologyMap({
   const dragViewport = useRef({ x: 0, y: 0 })
   const lastPinchDist = useRef(0)
 
+  // ---- Adaptive quality state ----
+  const [qualityLevel, setQualityLevel] = useState(1)
+  const frameTimesRef = useRef<number[]>([])
+
+  // ---- Adaptive Quality Helper (defined before use in render) ----
+  const getAdaptiveQualityNodes = useCallback(
+    (allNodes: NodePosition[], quality: number): NodePosition[] => {
+      if (quality >= 1) return allNodes
+      const currentEdges = data.edges
+      const sorted = [...allNodes].sort((a, b) => {
+        const aScore =
+          (a.label ? 30 : 0) +
+          (a.r ? a.r * 2 : 0) +
+          (currentEdges.filter((e) => e.source === a.id || e.target === a.id).length * 5)
+        const bScore =
+          (b.label ? 30 : 0) +
+          (b.r ? b.r * 2 : 0) +
+          (currentEdges.filter((e) => e.source === b.id || e.target === b.id).length * 5)
+        return bScore - aScore
+      })
+      const count = Math.max(1, Math.floor(allNodes.length * quality))
+      return sorted.slice(0, count)
+    },
+    [data.edges],
+  )
+
   const layout = useMeshLayout(layoutConfig)
 
   const nodes = useMemo(
@@ -490,16 +516,24 @@ export function MeshTopologyMap({
   const renderCallbackRef = useRef<() => void>(() => {})
 
   const render = useCallback(() => {
+    const frameStart = performance.now()
     const canvas = canvasRef.current
     if (!canvas) return
     const currentViewport = viewportRef.current
     const si = spatialIndexRef.current
     const visibleNodes = si ? si.queryViewport(currentViewport) : nodes
+
+    // Adaptive quality: reduce visible nodes when frame budget exceeded
+    let renderNodes = visibleNodes
+    if (cfg.adaptiveQualityEnabled) {
+      renderNodes = getAdaptiveQualityNodes(visibleNodes, qualityLevel)
+    }
+
     const lod = getLodLevel(currentViewport.zoom, cfg)
 
     const gl = glRef.current
     if (gl && renderModeRef.current === 'webgl2') {
-      renderWebGL2(gl, visibleNodes, edges, currentViewport, cfg, lod, false)
+      renderWebGL2(gl, renderNodes, edges, currentViewport, cfg, lod, false)
     } else {
       const ctx2d = canvas.getContext('2d')
       if (ctx2d) {
@@ -509,12 +543,32 @@ export function MeshTopologyMap({
           window.devicePixelRatio || 1,
           0, 0,
         )
-        renderCanvas2D(ctx2d, visibleNodes, edges, currentViewport, cfg, lod, selectedNodeId)
+        renderCanvas2D(ctx2d, renderNodes, edges, currentViewport, cfg, lod, selectedNodeId)
+      }
+    }
+
+    // Adaptive quality: track frame times and adjust quality
+    if (cfg.adaptiveQualityEnabled) {
+      const frameDuration = performance.now() - frameStart
+      frameTimesRef.current.push(frameDuration)
+      if (frameTimesRef.current.length > 30) frameTimesRef.current.shift()
+
+      const avgFrameTime =
+        frameTimesRef.current.reduce((s, t) => s + t, 0) /
+        frameTimesRef.current.length
+      if (avgFrameTime > cfg.adaptiveQualityThreshold) {
+        setQualityLevel((prev) =>
+          Math.max(0.25, prev - cfg.adaptiveQualityReduceFraction),
+        )
+      } else if (avgFrameTime < cfg.adaptiveQualityThreshold * 0.5 && qualityLevel < 1) {
+        setQualityLevel((prev) =>
+          Math.min(1, prev + cfg.adaptiveQualityReduceFraction),
+        )
       }
     }
 
     animFrameRef.current = requestAnimationFrame(() => renderCallbackRef.current())
-  }, [nodes, edges, cfg, selectedNodeId])
+  }, [nodes, edges, cfg, selectedNodeId, qualityLevel, getAdaptiveQualityNodes])
 
   useEffect(() => { renderCallbackRef.current = render }, [render])
 

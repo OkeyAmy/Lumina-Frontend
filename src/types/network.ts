@@ -32,7 +32,7 @@ export interface Viewport {
   height: number
 }
 
-export type RenderMode = 'webgl2' | 'canvas2d'
+export type RenderMode = 'webgl2' | 'canvas2d' | 'webgpu'
 
 export interface MeshTopologyConfig {
   nodeRadius: number
@@ -45,6 +45,12 @@ export interface MeshTopologyConfig {
   colorSelected: string
   colorBackground: string
   physicsEnabled: boolean
+  /** Max GPU frame time in ms before adaptive quality kicks in (default: 14) */
+  adaptiveQualityThreshold: number
+  /** Fraction of nodes to hide when frame budget is exceeded (default: 0.25) */
+  adaptiveQualityReduceFraction: number
+  /** Enable adaptive quality degradation (default: true) */
+  adaptiveQualityEnabled: boolean
 }
 
 export const DEFAULT_MESH_CONFIG: MeshTopologyConfig = {
@@ -58,6 +64,9 @@ export const DEFAULT_MESH_CONFIG: MeshTopologyConfig = {
   colorSelected: '#f59e0b',
   colorBackground: '#f7f4ee',
   physicsEnabled: true,
+  adaptiveQualityThreshold: 14,
+  adaptiveQualityReduceFraction: 0.25,
+  adaptiveQualityEnabled: true,
 }
 
 export interface PickResult {
