@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react'
 import { create } from 'zustand'
 import { NodeList } from '@/src/components/network/NodeList'
 import { AlertFeed } from '@/src/components/dashboard/AlertFeed'
+import { ActivityLogList } from '@/src/components/activity/ActivityLogList'
 import { SkeletonCard } from '@/src/components/skeleton/SkeletonCard'
 import { SkeletonChart } from '@/src/components/skeleton/SkeletonChart'
 import { useSkeletonTiming } from '@/src/hooks/useSkeletonTiming'
+import { useActivityLogSubscription } from '@/src/hooks/useActivityLogSubscription'
 import type { NodePosition } from '@/src/types/network'
 
 interface DashboardStore {
@@ -80,6 +82,7 @@ function AlertSectionSkeleton() {
 }
 
 export function FacilityDashboard() {
+  const { events: activityEvents } = useActivityLogSubscription(10_000)
   const [nodesData, setNodesData] = useState<NodePosition[] | null>(null)
   const setNodesReady = useDashboardStore((s) => s.setNodesReady)
   const setAlertsReady = useDashboardStore((s) => s.setAlertsReady)
@@ -196,6 +199,10 @@ export function FacilityDashboard() {
                 )}
               </div>
             ))}
+          </div>
+
+          <div className="mt-6">
+            <ActivityLogList events={activityEvents} />
           </div>
 
           <div className="mt-6">
