@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useWalletIdentity } from "@/src/hooks/useWalletIdentity";
 import { flushQueue } from "@/src/lib/offlineQueue";
+import { SessionIndicator } from "@/src/components/shared/SessionIndicator";
 
 interface WaitingWorker {
   postMessage: (data: { type: "SKIP_WAITING" }) => void;
@@ -118,6 +119,10 @@ export function WalletStatusBar() {
           data-testid="wallet-transitioning"
           data-transitioning={isTransitioning}
         />
+      </div>
+
+      <div className="fixed right-4 top-4 z-50">
+        <SessionIndicator />
       </div>
 
       <div
