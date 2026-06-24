@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { createQueryClient } from "@/src/lib/queryClient";
 import { installOfflineSync } from "@/src/lib/offlineSync";
 import { WalletProvider } from "@/src/components/providers/WalletProvider";
+import { SessionProvider } from "@/src/components/providers/SessionProvider";
 import { WalletStatusBar } from "@/src/components/shared/WalletStatusBar";
 import { ThemeProvider } from "@/src/components/providers/ThemeProvider";
 import { useOfflineSync, OfflineSyncContext } from "@/src/hooks/useOfflineSync";
@@ -61,12 +62,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <SentryOfflineQueueBridge />
       <ThemeProvider>
         <WalletProvider>
-          <OfflineSyncProvider>
-            <AppErrorBoundary>
-              {children}
-              <WalletStatusBar />
-            </AppErrorBoundary>
-          </OfflineSyncProvider>
+          <SessionProvider>
+            <OfflineSyncProvider>
+              <AppErrorBoundary>
+                {children}
+                <WalletStatusBar />
+              </AppErrorBoundary>
+            </OfflineSyncProvider>
+          </SessionProvider>
         </WalletProvider>
       </ThemeProvider>
     </QueryClientProvider>
